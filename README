@@ -1,118 +1,78 @@
-#
-# $Id: README,v 1.1.1.1 2003-04-18 23:43:07 fjoe Exp $
-#
+Last revised: August 15, 1998
 
-This is the mudFTP v2 client package. Two clients are available:
+1. What is mudFTP?
+==================
 
-Java
-====
+mudFTP is a way to retrieve text entries from the MUD you are connected to
+to your local system, edit them locally with your favorite editor, then
+upload them back up.
 
-The Java client is in the java directory and was written by Oliver Jowett.
-It will run on any platform that has Java (JRE or JDK) or via an applet.
-<insert info about how to run as an applet>. To run it as an application,
-run something like this:
+The protocol uses a separate port for connections. A client program connects
+to that port and retrieves/send the files, typically invoked by your
+MUD client. Alternatively, the mudFTP client program runs outside your
+MUD client and spawns an editor whenever the MUD server asks it to. The
+latter is preferred in multi-window environments.
 
-cd /path/to/mudftp
-java CLIClient Hostname FTPPort Username Password EditorCommand
+2. Installation
+===============
 
-The FTPPort is typically 6 higher than the main port. The editor command
-should be whatever editor you wish to run when a new file is fetched. The
-name of the file to be edited will be passed as the first argument.
-
-
-The C client
-============
-
-The C client runs under UNIX and Windows32 (tested on Windows95 and NT).
-
-Compiling for UNIX
-------------------
-
-Go to the client/c directory and run a "make" there.  Copy the resulting
-file "mudftp" into your path somewhere.
-
-Compiling for Win32
--------------------
-
-There is a pre-compiled binary for use, but if for some reason you should
-wish to compile the source yourself you can try using the Makefile.w32.
-The pre-compiled binary was compiled using a mingw32 Linux cross-compiler.
-It should also compile with minimal fuss under MS Visual C++.
-
-Note that the Windows version of mudFTP is a command line program, rather
-than graphical unlike many Windows programs.
+Check the file SERVERS for a list of MUD servers that are supported
+using patches. If you cannot find your server there, you could try to
+apply the patch for the server which is closest to yours. The patches
+change mostly code that is rarely touched by MUD programmers.
 
 
-Usage on either UNIX or Win32
----------------------------------
+3. Files
+========
 
-After connecting to the mudFTP-enabled MUD, run "mudftp push MUDNAME".
+Currently, mudFTP supports only one kind of files: "temporary" files editing
+using string_append from the NiMUD/ILAB OLC package. The file currently
+edited by the user is the only file that the user can retrieve and send.
 
-MUDNAME is the MUD's name in your configuration file. That file is
-typically located in your home directory, and named .mudftp. You can
-override the location by setting the MUDFTP environment variable to
-something else.
+In the future, it may be possible to edit other files. This would perhaps
+allow for an easy interface to online building: for example, retrieve
+mobs/1425 would retrieve all data about mob 1425. Then
+mobs/1425/description would retrieve its description.
 
-If you are running under Windows, mudFTP will look for a file named 
-"mudftp.cfg" in its current directory.  Also, you can specify an alternate
-location by setting the MUDFTP environment variable to its location.
-  set MUDFTP=c:\path\to\config\file
-
-If you are using WindowsNT and are not logged on with administrator
-priveledges and mudFTP complains about not being able to create files then
-you will need to set the MUDFTP_TEMP variable to some directory that you
-have write permissions in;
-  set MUDFTP_TEMP=c:\temp\
-
-A sample configuration file is provided.  It is usable with either the UNIX
-or Win32 version of mudFTP.
-
-The layout of this file is fairly simple: there are 6 words for each line:
-
-mud Mudname Hostname Port Username Password
-
-MUDNAME is the name you wish to give this MUD and which you will use later
-when running the client. Port is the FTP Port, and should be 6 higher
-than the normal MUD port. Example:
-
-mud ar abandoned.org 4450 drylock qwerty
-
-will define a new MUD nicknamed "ar", whose ftp port resides at abandoned.org
-port 4450, and on which you are "drylock" with password "qwerty".
-
-You MUST also specify how to run the editor by supplying:
-
-editor EditorCommand
-
-e.g. Editor EDIT.COM or Editor /usr/bin/joe. If you supply a % somewhere
-in the editor command (the command can be several words), it gets
-replaced with the filename of file to be edited. Otherwise, the name
-is appended.
+However, as it is now, even with this limitation, mudFTP is very useful for
+editing notes (if you are handling them via the string editor),
+descriptions, MUD programs, etc.
 
 
-Good editor commands
+4. Client side
+==============
+
+Please refer to the file CLIENT for instructions on how to use the
+mudFTP client.
+
+
+5. History of mudFTP
 ====================
 
-Under Linux, the following is handy as an editor command:
+The first version of the mudFTP protocol described a pull-only client:
+the client would connect to the remote mudFTP server, ask for a
+filename then retrieve the file and exit. The client had to work
+together with a shell script that would run the client twice.
 
-open -e -s /usr/bin/joe +999 %
+This however, made it impossible to use the client if the MUD client
+you were using did not support triggers and running of external
+programs. It also was quite difficult to set up.
 
-This will open a new Virtual Terminal, switch to it, run the command, wait
-for it to finish and then switch back. This is ideal with mcl.
+As my eventual goal was world domination, this was not acceptable.
+Oliver Jowett then suggested to use a pull system: the mudFTP client
+would not be invoked by the editor, but seperately by the user, and
+would then connect to the remote server and sit there idle. When a text
+was to be edited, the remote server would push it to the mudFTP client,
+which would then invoke the editor. Thus, the user would have only to
+remember to invoke the mudFTP client when fist connecting to the MUD.
 
-The +999 will make the editor start at line 999 (i.e. at the bottom of the
-file).
+The push/pull techniques were combined, so that people who preferred
+the pull technique (e.g. lacking multiple windows) could still use
+mudFTP.
 
-Under Windows, try:
+6. Support
+==========
 
-editor start /w edit %
-
-  or
-
-editor start /w wordpad %
-
-Note that when using Windows, the 'start /w' is rather important.  If you
-don't know what it does, don't worry about it, but don't leave it out.
-
-For further windows32 specific information, look at the file readme.w32.
+Visit http://www.abandoned.org/drylock/mudftp/ for information about
+new mudFTP releases and support mailing lists.
 

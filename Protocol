@@ -1,0 +1,269 @@
+mudFTP standard description
+===========================
+
+This chapters attempts to give a detailed description of what conventions
+mudFTP server/clients use for communicating with each other.
+
+The files transferred have all to end with a newline - there are no partial
+lines. The server ends each line with \n. Any \rs received should be ignored
+(while the RFC says they should be sent before the \n, MERC derivatives
+send them after and thus need to store them internally in that order).
+The client will strip them from any incoming/outgoing traffic.
+Depending on the OS which the client runs under, they can however be
+written to the file that the editor is run on.
+
+Note that all messages sent by the server always form a full line (i.e. if
+the document mentions an OK being sent, it is an OK followed by \n).
+
+<item> denotes a required item, [item] an optional one. TEXT denotes
+that literally this text is sent or received. The newline character is
+normally not allowed in those items.
+
+The items are seperate by exactly one space (ASCII code 32). The space
+before an optional item is the part of the item, so that e.g. "FAILED
+[explanation]" can validly consist of just the string "FAILED".
+
+
+1. Connection
+=============
+
+Upon startup, the client will connect via TCP to the mudFTP port. This will
+typically be the port of the main MUD, plus 6.
+
+
+1.1 Authorization
+=================
+
+After successfull connection, the client should identify itself to the
+server, by sending the line containing:
+
+<username> <password>
+
+It is up to the server what password is required. Typical implementation
+would use the character's password, requiring the character to be
+online while connection happens.
+
+
+The server will then send back the following line:
+
+OK mudFTP <version number> [additional information]
+
+<version number> is defined as a 1 or more digits, followed by a dot,
+then followed by one or more digits.
+
+Additional information can contain whatever the server pleases. It may
+be in the future used as some sort of capability string.
+
+If password/username failure happened:
+
+FAILED
+
+If failure happens, connection is closed. The server should not inform
+whether the failure was because of a user that does not exist or an
+invalid password.
+
+
+2. Pull state / common commands
+===============================
+
+After authorization is acquired, the client can send commands to the
+server - the state of the connection between the server and the client
+is said to be the Pull state (the other state is the Push state).
+
+
+2.1 GET
+=======
+
+GET <filename> [checksum]
+
+The GET command is used to retrieve a remote file. As first parameter,
+the filename should be supplied (1 to 255 non-whitespace characters).
+
+What filenames are accepted is server dependant. With the client in
+push mode, the filename comes from the MUD client that invoked mudFTP,
+which in turn comes from the MUD server. The filename identifies the
+particular string being edited.
+
+The checksum is an optional string of non-whitespace characters that
+reasonably identifies the contents of the file which is wanted
+retrieved. It is used when the client knows it has already retrieved
+the file that is requested previously, and wants to avoid waiting to
+retrieve it again, if it has no changed since. The checksum is entirely
+server-defined. If the checksum for a given filename is constant, it is
+reasonable for the server to assume the file has not changed - design
+checksums accordingly!
+
+
+If file exists and the checksum does not match or it was not supplied,
+the response is:
+
+SENDING <filename> <number of lines> <checksum>
+
+Followed by the appropriate number of lines of data. After the file is sent,
+an "OK" is sent. Note that a file cannot contain a partial line: it will
+always contain at least one line, and the last line will always end with a
+newline.
+
+
+If file does not exist, response is:
+
+FAILED [optional explanation]
+
+The optional explanation can be e.g. "No rights to retrieve this file"
+or "File does not exist", but is not required.
+
+
+If a syntax error occcurs (for example, GET without a filename),
+the response is:
+
+ERROR [optional explanation]
+
+
+If the file exists, and a checksum was supplied with the GET command,
+and the checksum matches, the match message is sent:
+
+MATCH
+
+This instructs the mudFTP client to use the file that was already
+stored locally, since the remote copy has the same checksum.
+
+
+2.2 PUT
+=======
+
+PUT <filename> <number of lines>
+
+PUT takes two arguments: name of the file (1 or more non-whitespace
+characters) that will be uploaded, and amount of lines this file takes
+up.
+
+If file exists and the user can write to it, the number of lines
+mentioned are waited upon. Upon receving the last line, the server will
+send back:
+
+OK <checksum>
+
+where <checksum> is the checksum of the new file (see 2.1).
+
+
+If file is not available or the user cannot write to it:
+
+FAILED [explanation]
+
+The explanation is optional.
+
+
+If a syntax error occurrs, the response is:
+
+ERROR [explanation]
+
+
+
+2.3 QUIT
+========
+
+The QUIT command consits of only that word. Upon receving it, the
+server will terminate the connection.
+
+
+2.4 PUSH
+========
+
+The PUSH command consists of the word PUSH. Upon receving it, the
+server will change the connection type to the client to be in Push
+state (see section 3).
+
+If the connection is already in the PUSH state, the message:
+
+ERROR [optional explanation]
+
+is sent to the client, otherwise an OK is sent.
+
+
+2.5 NOOP
+========
+
+This command has no effect on the connection itself. The server should
+respond with:
+
+OK [optional explanation]
+
+This command is useful to keep a push-mode connection "alive".
+
+
+2.6 STOP
+========
+
+This command is equivalent to a PUT of the current file being edited with
+no modifications (ie. it should terminate the editing mode with no changes).
+Possible responses are:
+
+OK
+FAILED [optional explanation]
+
+
+3. Push state
+=============
+
+In Push state, the server can at any time initiate a data transfer to
+the client. The output of such a data transfer is equivalent to the
+output of the GET command when a valid file is asked for. The server
+will typically start sending a file based on the actions on the user
+that is connected to its MUD port. MATCH is never sent.
+
+The other commands behave as usual, except PUSH which will return an
+error. Using GET while in PUSH mode may cause unpredictable results
+due to timing if the server decides to push data at exactly the same
+time - using it it not recommended (and may be forbidden in a later
+version).
+
+3.1 Client issues
+=================
+
+To make the best use of the push mode, some optimizations are possible
+on the client side:
+
+- After sending a PUT command, the client should read and store the
+  filename / new contents / new checksum in a local cache
+- When a SENDING command is received, the client can immediately compare
+  the filename / checksum against its cache. If there is a match, the editor
+  can be immediately started - without waiting for the string data, which
+  should be skipped and ignored.
+
+
+4. Filenames
+============
+
+What filenames are used is implementation defined, except that they
+must consist of 1 to 255 non-whitespace characters that uniquely identify a
+particular string location (not necessarily contents). For example, it could
+be a filename within the server's internal filespace, or a text
+representation of an indirect pointer to the string itself within the server.
+
+
+5. Pull mode triggering
+=======================
+
+A mud server can inform a client that a file is waiting to be fetched in pull
+mode by sending a specially-formatted string. A mud client with triggering
+and program-execution abilities can recognize this and start the pull client
+automatically.
+
+The string consists of a newline (\n), followed by the filename that is
+available, followed by the character 230. In C:
+
+sprintf(buf, "\n%s%c\n", filename, 230);
+
+In push mode, this should not be sent - the server will simply initiate the
+transfer on the mudFTP connection directly.
+
+6. Revisions
+============
+
+$Log: not supported by cvs2svn $
+Revision 1.2  1998/08/16 17:31:36  root
+Minor typo changes.
+
+Revision 1.1  1998/08/16 17:31:03  root
+Initial revision
+

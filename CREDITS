@@ -1,0 +1,21 @@
+Initial idea and implementation of v1 protocol, portability changes for v2,
+documentation and v2 C client: Erwin S. Andreasen <erwin@andreasen.com>.
+
+v2 protocol idea, server side implementation and java client:
+Oliver Jowett <oliver@jowett.manawatu.gen.nz>.
+
+v2 client port for Windows: Cath Allen <mango@turf.org>
+
+Patches for other codebases were provided by the following people:
+
+ROM 2.4 - Jessica Boyd <jessica.boyd@mnsu.edu>
+ROT - Dominic J. Eidson <sauron@hub.kdi.com>
+Circle - George Greer <greerga@circlemud.org>
+LDMUD - Markus Peter <warp@hip.spin.de>
+
+
+The mudFTP client is under GPL. See the file COPYING for details.
+Basically, you may do with it what you want, but if you want to distribute
+any part of the package, you must make full source for it available. The server
+is copyrighted, but may be used freely as long as the credits are retained.
+

@@ -1,0 +1,118 @@
+#
+# $Id: README.unix,v 1.1 2003-04-19 01:45:54 fjoe Exp $
+#
+
+This is the mudFTP v2 client package. Two clients are available:
+
+Java
+====
+
+The Java client is in the java directory and was written by Oliver Jowett.
+It will run on any platform that has Java (JRE or JDK) or via an applet.
+<insert info about how to run as an applet>. To run it as an application,
+run something like this:
+
+cd /path/to/mudftp
+java CLIClient Hostname FTPPort Username Password EditorCommand
+
+The FTPPort is typically 6 higher than the main port. The editor command
+should be whatever editor you wish to run when a new file is fetched. The
+name of the file to be edited will be passed as the first argument.
+
+
+The C client
+============
+
+The C client runs under UNIX and Windows32 (tested on Windows95 and NT).
+
+Compiling for UNIX
+------------------
+
+Go to the client/c directory and run a "make" there.  Copy the resulting
+file "mudftp" into your path somewhere.
+
+Compiling for Win32
+-------------------
+
+There is a pre-compiled binary for use, but if for some reason you should
+wish to compile the source yourself you can try using the Makefile.w32.
+The pre-compiled binary was compiled using a mingw32 Linux cross-compiler.
+It should also compile with minimal fuss under MS Visual C++.
+
+Note that the Windows version of mudFTP is a command line program, rather
+than graphical unlike many Windows programs.
+
+
+Usage on either UNIX or Win32
+---------------------------------
+
+After connecting to the mudFTP-enabled MUD, run "mudftp push MUDNAME".
+
+MUDNAME is the MUD's name in your configuration file. That file is
+typically located in your home directory, and named .mudftp. You can
+override the location by setting the MUDFTP environment variable to
+something else.
+
+If you are running under Windows, mudFTP will look for a file named 
+"mudftp.cfg" in its current directory.  Also, you can specify an alternate
+location by setting the MUDFTP environment variable to its location.
+  set MUDFTP=c:\path\to\config\file
+
+If you are using WindowsNT and are not logged on with administrator
+priveledges and mudFTP complains about not being able to create files then
+you will need to set the MUDFTP_TEMP variable to some directory that you
+have write permissions in;
+  set MUDFTP_TEMP=c:\temp\
+
+A sample configuration file is provided.  It is usable with either the UNIX
+or Win32 version of mudFTP.
+
+The layout of this file is fairly simple: there are 6 words for each line:
+
+mud Mudname Hostname Port Username Password
+
+MUDNAME is the name you wish to give this MUD and which you will use later
+when running the client. Port is the FTP Port, and should be 6 higher
+than the normal MUD port. Example:
+
+mud ar abandoned.org 4450 drylock qwerty
+
+will define a new MUD nicknamed "ar", whose ftp port resides at abandoned.org
+port 4450, and on which you are "drylock" with password "qwerty".
+
+You MUST also specify how to run the editor by supplying:
+
+editor EditorCommand
+
+e.g. Editor EDIT.COM or Editor /usr/bin/joe. If you supply a % somewhere
+in the editor command (the command can be several words), it gets
+replaced with the filename of file to be edited. Otherwise, the name
+is appended.
+
+
+Good editor commands
+====================
+
+Under Linux, the following is handy as an editor command:
+
+open -e -s /usr/bin/joe +999 %
+
+This will open a new Virtual Terminal, switch to it, run the command, wait
+for it to finish and then switch back. This is ideal with mcl.
+
+The +999 will make the editor start at line 999 (i.e. at the bottom of the
+file).
+
+Under Windows, try:
+
+editor start /w edit %
+
+  or
+
+editor start /w wordpad %
+
+Note that when using Windows, the 'start /w' is rather important.  If you
+don't know what it does, don't worry about it, but don't leave it out.
+
+For further windows32 specific information, look at the file readme.w32.
+
