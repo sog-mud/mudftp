@@ -1,5 +1,5 @@
 /*
- * $Id: conf.c,v 1.4 2003-04-19 09:28:15 fjoe Exp $
+ * $Id: conf.c,v 1.5 2003-04-19 09:33:23 fjoe Exp $
  *
  * Reading of a configuration file
  */
@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #ifndef WIN32
+#include <sys/param.h>
 #include <unistd.h>
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * $Id: mudftp.c,v 1.4 2003-04-19 09:28:16 fjoe Exp $
+ * $Id: mudftp.c,v 1.5 2003-04-19 09:33:24 fjoe Exp $
  */
 
 #include <sys/types.h>
@@ -15,6 +15,8 @@
 #ifdef WIN32
 #include <io.h>
 #include <time.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "config.h"
