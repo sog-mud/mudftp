@@ -1,23 +1,41 @@
 /*
- * $Id: net.c,v 1.1.1.1 2003-04-18 23:43:07 fjoe Exp $
+ * $Id: net.c,v 1.2 2003-04-19 09:28:16 fjoe Exp $
  */
 
+#include <sys/types.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <stdarg.h>
+
+#ifdef WIN32
+
+#include <winsock.h>
+#include <time.h>
+#include <io.h>
+
+#else
+
+#include <sys/time.h>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <sys/time.h>
 #include <unistd.h>
-#include <stdarg.h>
 
+#endif
+
+#include "config.h"
 #include "net.h"
+
+#ifdef WIN32
+static void write_sock(int fd, const char *buf, size_t len);
+#else
+#define write_sock write_fd
+#endif
 
 /* Connect to this mud; return fd or -1 if failed to connect */
 int
@@ -25,6 +43,15 @@ connect_mud(const char *hostname, int port)
 {
 	struct sockaddr_in sockad;
 	int fd;
+
+#ifdef WIN32
+	WSADATA wsadata;
+#define WSVERS MAKEWORD(2,2)
+	if (WSAStartup(WSVERS, &wsadata) != 0) {
+		fprintf(stderr, "Failed to initialize winsock.\n");
+		exit(1);
+	}
+#endif
 
 	/* Check if inet_addr will accept this as a valid address */
 	/* rather than assuming whatever starts with a digit is an ip */
@@ -38,7 +65,7 @@ connect_mud(const char *hostname, int port)
 		memcpy ((char *) &sockad.sin_addr, h->h_addr, sizeof (sockad.sin_addr));
 	}
 
-	sockad.sin_port = htons (port);
+	sockad.sin_port = htons ((short) port);
 	sockad.sin_family = AF_INET;
 
 	if ((fd = socket (AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -57,7 +84,12 @@ connect_mud(const char *hostname, int port)
 void
 disconnect_mud(int fd)
 {
+#ifdef WIN32
+	closesocket(fd);
+	WSACleanup();
+#else
 	close(fd);
+#endif
 }
 
 /* Read data from MUD; return exactly one line */
@@ -72,7 +104,11 @@ read_line_mud(int fd, int log)
 	size_t	len;
 
 	while (!pos || (newline = (char *) memchr (buf, '\n', pos)) == NULL) {
+#ifdef WIN32
+		res = recv(fd, buf + pos, sizeof(buf) - pos, 0);
+#else
 		res = read(fd, buf + pos, sizeof(buf) - pos);
+#endif
 		if (res < 0) {
 			perror ("read_line_mud: read");
 			exit(1);
@@ -123,7 +159,7 @@ write_mud(int fd, const char *fmt, ...)
 	vsprintf(buf, fmt, ap);
 	va_end(ap);
 
-	write_fd(fd, buf, strlen(buf));
+	write_sock(fd, buf, strlen(buf));
 }
 
 void
@@ -144,3 +180,24 @@ write_fd(int fd, const char *buf, size_t len)
 		len -= nw;
 	}
 }
+
+#ifdef WIN32
+void
+write_sock(int fd, const char *buf, size_t len)
+{
+	const char *p = buf;
+
+	while (len > 0) {
+		ssize_t nw;
+
+		nw = send(fd, p, len, 0);
+		if (nw < 0) {
+			perror("write_fd: write");
+			exit(1);
+		}
+
+		p += nw;
+		len -= nw;
+	}
+}
+#endif

@@ -1,9 +1,9 @@
 /*
- * $Id: conf.h,v 1.1.1.1 2003-04-18 23:43:07 fjoe Exp $
+ * $Id: conf.h,v 1.2 2003-04-19 09:28:16 fjoe Exp $
  */
 
-#ifndef _CONFIG_H_
-#define _CONFIG_H_
+#ifndef _CONF_H_
+#define _CONF_H_
 
 /* One mud */
 typedef struct mud mud_t;

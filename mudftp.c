@@ -1,37 +1,23 @@
 /*
- * $Id: mudftp.c,v 1.3 2003-04-19 07:47:41 fjoe Exp $
+ * $Id: mudftp.c,v 1.4 2003-04-19 09:28:16 fjoe Exp $
  */
 
+#include <sys/types.h>
+#ifndef WIN32
 #include <sys/param.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-
-#ifdef WIN32
-
-#include <errno.h>
-#include <winsock.h>
-#include <time.h>
-#define strncasecmp strnicmp
-
-#else
-
-#include <sys/time.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <netdb.h>
-#include <unistd.h>
-
 #endif
-
-#include <sys/types.h>
-#include <signal.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef WIN32
+#include <io.h>
+#include <time.h>
+#endif
 
+#include "config.h"
 #include "net.h"
 #include "conf.h"
 
@@ -82,7 +68,7 @@ put_file(int fd, char *filename, FILE *fp)
 	}
 
 	/* Make sure the last line is whole */
-	if (pc == text || *(pc -1) != '\n') {
+	if (pc == text || *(pc - 1) != '\n') {
 		lines++;
 		*pc++ = '\n';
 	}
@@ -162,6 +148,10 @@ main(int argc, char **argv)
 	if (!!strncasecmp(data, "OK", 2))
 		exit(1);
 
+#ifdef WIN32
+	srand(time(NULL));
+#endif
+
 	/* Now do various stuff depending operations mode */
 	for (;;) {
 		char remote_file[MAXPATHLEN];
@@ -173,8 +163,8 @@ main(int argc, char **argv)
 		struct stat st_before, st_after;
 
 		if ((tmp = getenv("MUDFTP_TEMP")) == NULL
-		||  (tmp = getenv("TEMP")) == NULL
-		||  (tmp = getenv("TMP")) == NULL)
+		&&  (tmp = getenv("TEMP")) == NULL
+		&&  (tmp = getenv("TMP")) == NULL)
 			tmp = "/tmp";
 		strlcpy(filename, tmp, sizeof(filename));
 		strlcat(filename, "/tmp.XXXXXX", sizeof(filename));

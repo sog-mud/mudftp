@@ -1,5 +1,5 @@
 /*
- * $Id: conf.c,v 1.3 2003-04-19 07:47:41 fjoe Exp $
+ * $Id: conf.c,v 1.4 2003-04-19 09:28:15 fjoe Exp $
  *
  * Reading of a configuration file
  */
@@ -9,13 +9,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef WIN32
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
-#else
+#ifndef WIN32
 #include <unistd.h>
 #endif
 
+#include "config.h"
 #include "conf.h"
 
 static mud_t *mud_list;
@@ -27,22 +25,25 @@ char *editor;
 FILE *
 open_config()
 {
-	char filename[256];
 	char *env;
-	FILE *fp;
 
 	/* If MUDFTP is defined, it points at our config file */
 	if ((env = getenv("MUDFTP")))
 		return fopen(env, "r");
 
+#ifndef WIN32
 	/* Let's try ~/.mudftp first */
 	if ((env = getenv("HOME"))) {
+		char filename[MAXPATHLEN];
+		FILE *fp;
+
 		strlcpy(filename, env, sizeof(filename));
 		strlcat(filename, CONFIG_FILE_1, sizeof(filename));
 
 		if ((fp = fopen(filename, "r")) != NULL)
 			return fp;
 	}
+#endif
 
 	/* Last try: file "config" in current directory */
 	/* This is what non-UNIX users will do */
@@ -54,7 +55,9 @@ read_config(void)
 {
 	char buf[1024];
 	FILE *fp;
+#ifndef WIN32
 	struct stat sb;
+#endif
 
 	if ((fp = open_config()) == NULL) {
 #ifdef WIN32
@@ -64,6 +67,7 @@ read_config(void)
 #endif
 		exit (1);
 	}
+#ifndef WIN32
 	if (fstat(fileno(fp), &sb) < 0) {
 		perror("fstat");
 		exit(1);
@@ -76,6 +80,7 @@ read_config(void)
 		fprintf(stderr, "Error: config gile is writeable by others\n");
 		exit(1);
 	}
+#endif
 
 	editor = getenv("EDITOR");
 	if (editor == NULL)
