@@ -1,0 +1,70 @@
+#
+# $Id: README.w32,v 1.1.1.1 2003-04-18 23:43:07 fjoe Exp $
+#
+
+                            mudFTP for Windows
+                            ------------------
+
+This readme covers what is needed to get the windows binary distribution of
+mudftp running with the minimum of fuss.
+
+The zip file that you unpacked to get to this readme file should contain the
+following files;
+
+  readme
+  mudftp.exe
+  mudftp.cfg
+
+Edit the mudftp.cfg file with your favorite editor, for example I use (from
+the DOS command prompt);
+
+  edit mudftp.cfg
+
+Change the 'yourname' and 'yourpassword' to be your account name and account
+password on the MUD that you're connecting to.  It will look something like;
+
+  mud ar abandoned.org 4450 zoia password
+
+The second line of the file should start with the word editor and contain
+the command needed to start the editor that you are going to use to edit
+files with, for example if you were using the DOS edit command;
+
+  editor start /w edit %
+
+If you were wanting to use wordpad instead, then it would be;
+
+  editor start /w wordpad %
+
+Note that you must leave the 'start /w' and the '%' where they are.  Only
+change what is between them if you know what you are doing.  (If you don't
+know what 'start /w' does, then it's probably good to assume that you don't
+know what you are doing. ;-)).
+
+Now, open a DOS command shell if you haven't already.  If you are using
+Windows NT and you do not have administrative privs. then you will need to
+execute the following line;
+
+  set MUDFTP_TEMP=c:\temp\
+
+If you do not have write permissions to c:\temp\ or it does not exist, then
+change that to somewhere that you can write files to.  (For example, the
+directory you just unpacked mudftp.zip will work.)
+
+To run mudFTP, first login to the mud as usual.  Then in the command prompt
+window that you just opened, change directory to where you unpacked mudFTP;
+
+  E.g. cd c:\mudftp\
+
+Then type;
+
+  mudftp push ar
+
+Where 'ar' is the word immediately following 'mud' in your mudftp.cfg file.
+If you didn't change that bit, then it will be 'ar'.
+
+Finally, enable mudFTP editing on the MUD, for Abandoned Reality this can be
+done with CONFIG +MUDFTP. On ROM MUDs, use just "MUDFTP". Now enter the
+description editor on the MUD and mudFTP should automatically pop up the
+specified editor with the requested text in it.  If this didn't happen, look
+at your command prompt window for error messages and try to solve the
+problem.
