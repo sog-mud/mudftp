@@ -1,5 +1,5 @@
 /*
- * $Id: mudftp.c,v 1.2 2003-04-19 00:15:38 fjoe Exp $
+ * $Id: mudftp.c,v 1.3 2003-04-19 07:47:41 fjoe Exp $
  */
 
 #include <sys/param.h>
@@ -33,7 +33,7 @@
 #include <string.h>
 
 #include "net.h"
-#include "config.h"
+#include "conf.h"
 
 /*
  * Receive this file, writing it into fp

@@ -1,9 +1,9 @@
 #
-# $Id: Makefile,v 1.2 2003-04-19 00:15:38 fjoe Exp $
+# $Id: Makefile,v 1.3 2003-04-19 07:47:41 fjoe Exp $
 #
 
 PROG=		mudftp
-SRCS=		mudftp.c config.c net.c
+SRCS=		mudftp.c conf.c net.c
 CFLAGS=		-Wall -W -Wno-shadow -g
 NOMAN=		yes
 NOOBJ=		yes

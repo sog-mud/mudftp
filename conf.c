@@ -1,5 +1,5 @@
 /*
- * $Id: conf.c,v 1.2 2003-04-19 00:15:38 fjoe Exp $
+ * $Id: conf.c,v 1.3 2003-04-19 07:47:41 fjoe Exp $
  *
  * Reading of a configuration file
  */
@@ -16,7 +16,7 @@
 #include <unistd.h>
 #endif
 
-#include "config.h"
+#include "conf.h"
 
 static mud_t *mud_list;
 char *editor;
