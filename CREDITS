@@ -1,6 +1,9 @@
 Initial idea and implementation of v1 protocol, portability changes for v2,
 documentation and v2 C client: Erwin S. Andreasen <erwin@andreasen.com>.
 
+This client version implementation: Farmer Joe <fjoe@iclub.nsu.ru>
+(heavily based on Erwin's client).
+
 v2 protocol idea, server side implementation and java client:
 Oliver Jowett <oliver@jowett.manawatu.gen.nz>.
 
