@@ -1,5 +1,5 @@
 /*
- * $Id: conf.c,v 1.1.1.1 2003-04-18 23:43:07 fjoe Exp $
+ * $Id: conf.c,v 1.2 2003-04-19 00:15:38 fjoe Exp $
  *
  * Reading of a configuration file
  */
@@ -145,11 +145,14 @@ mud_lookup(const char *name, int def)
 {
 	mud_t *m;
 
-	for (m = mud_list; m; m = m->next) {
-		if (!strcasecmp(m->name, name)
-		||  (def && !strcasecmp(m->name, "default")))
-			return m;
+	if (name != NULL) {
+		for (m = mud_list; m; m = m->next) {
+			if (!strcasecmp(m->name, name))
+				return m;
+		}
 	}
 
+	if (def)
+		return mud_lookup("default", 0);
 	return NULL;
 }

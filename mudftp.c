@@ -1,8 +1,9 @@
 /*
- * $Id: mudftp.c,v 1.1.1.1 2003-04-18 23:43:07 fjoe Exp $
+ * $Id: mudftp.c,v 1.2 2003-04-19 00:15:38 fjoe Exp $
  */
 
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -135,16 +136,14 @@ main(int argc, char **argv)
 	mud_t *m;
 	char checksum[256];
 
-	if (argc < 2) {
-		fprintf(stderr, "Usage: mudftp mud\n");
-		exit(1);
-	}
-
+	if (argc < 2)
+		fprintf(stderr, "Usage: mudftp [name]\n");
 	read_config();
 	if ((m = mud_lookup(argv[1], 1)) == NULL) {
 		fprintf(stderr, "%s: No such mud defined in config\n", argv[1]);
 		exit(1);
 	}
+	fprintf(stderr, "Using entry [%s]\n", m->name);
 
 	/* Try to connect */
 	printf("Connecting...\n");
@@ -171,6 +170,7 @@ main(int argc, char **argv)
 		int tfd;
 		char *tmp;
 		FILE *fp;
+		struct stat st_before, st_after;
 
 		if ((tmp = getenv("MUDFTP_TEMP")) == NULL
 		||  (tmp = getenv("TEMP")) == NULL
@@ -196,18 +196,33 @@ main(int argc, char **argv)
 		close(tfd);
 
 		/* Spawn the editor */
+		if (stat(filename, &st_before) < 0) {
+			perror("stat");
+			exit(1);
+		}
 		spawn_editor(filename);
-
-		/* Upload the file back */
-		if ((fp = fopen(filename, "rb")) == NULL) {
-			/* XXX do not exit */
-			fprintf(stderr,
-			    "fopen: %s: %s\n", filename, strerror(errno));
+		if (stat(filename, &st_after) < 0) {
+			perror("stat");
 			exit(1);
 		}
 
-		put_file(sock, remote_file, fp);
-		fclose(fp);
+		if (st_before.st_mtime == st_after.st_mtime) {
+			fprintf(stderr, "No changes made.\n");
+			write_mud(sock, "STOP\n");
+			printf("Waiting...\n");
+			data = read_line_mud(sock, 1);
+		} else {
+			/* Upload the file back */
+			if ((fp = fopen(filename, "rb")) == NULL) {
+				/* XXX do not exit */
+				fprintf(stderr,
+				    "fopen: %s: %s\n",
+				    filename, strerror(errno));
+				exit(1);
+			}
+			put_file(sock, remote_file, fp);
+			fclose(fp);
+		}
 		unlink(filename);
 	}
 
