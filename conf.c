@@ -1,5 +1,5 @@
 /*
- * $Id: conf.c,v 1.5 2003-04-19 09:33:23 fjoe Exp $
+ * $Id: conf.c,v 1.6 2004-03-01 19:50:00 tatyana Exp $
  *
  * Reading of a configuration file
  */
@@ -86,6 +86,8 @@ read_config(void)
 	editor = getenv("EDITOR");
 	if (editor == NULL)
 		editor = strdup("vi");
+	else
+		editor = strdup(editor);
 	while (fgets(buf, sizeof(buf), fp)) {
 		char keyword[64];
 		int len;
